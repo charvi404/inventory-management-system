@@ -12,6 +12,11 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const handleQuickLogin = (roleUser, rolePass) => {
+    setUsername(roleUser);
+    setPassword(rolePass);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -105,8 +110,34 @@ const Login = () => {
           </button>
         </form>
         
-        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-          <p>Default Admin: admin / admin123</p>
+        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Test Accounts (Click to auto-fill)</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+            <button 
+              type="button" 
+              onClick={() => handleQuickLogin('admin', 'admin123')}
+              className="btn-secondary"
+              style={{ padding: '0.5rem', fontSize: '0.8rem', backgroundColor: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', border: '1px solid rgba(99, 102, 241, 0.2)' }}
+            >
+              Admin
+            </button>
+            <button 
+              type="button" 
+              onClick={() => handleQuickLogin('manager', 'manager123')}
+              className="btn-secondary"
+              style={{ padding: '0.5rem', fontSize: '0.8rem', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', border: '1px solid rgba(245, 158, 11, 0.2)' }}
+            >
+              Manager
+            </button>
+            <button 
+              type="button" 
+              onClick={() => handleQuickLogin('staff', 'staff123')}
+              className="btn-secondary"
+              style={{ padding: '0.5rem', fontSize: '0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', border: '1px solid rgba(16, 185, 129, 0.2)' }}
+            >
+              Staff
+            </button>
+          </div>
         </div>
       </div>
     </div>

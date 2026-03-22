@@ -60,4 +60,14 @@ router.post('/register', authenticateToken, requireRole(['Admin']), async (req, 
   }
 });
 
+// Get all users
+router.get('/users', authenticateToken, requireRole(['Admin', 'Manager']), async (req, res) => {
+  try {
+    const result = await query('SELECT id, username, role FROM users ORDER BY username ASC');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

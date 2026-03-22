@@ -7,9 +7,12 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Requests from './pages/Requests';
+import Allocations from './pages/Allocations';
+import Maintenance from './pages/Maintenance';
+import Notifications from './pages/Notifications';
 import Layout from './components/Layout';
 
-const ProtectedRoute = ({ children }) => {
+const RoleRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -18,6 +21,10 @@ const ProtectedRoute = ({ children }) => {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <Layout>{children}</Layout>;
@@ -30,24 +37,42 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         {/* Protected Routes inside Layout */}
-        <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" replace /></ProtectedRoute>} />
+        <Route path="/" element={<RoleRoute><Navigate to="/dashboard" replace /></RoleRoute>} />
         
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <RoleRoute allowedRoles={['Admin', 'Manager', 'Staff']}>
             <Dashboard />
-          </ProtectedRoute>
+          </RoleRoute>
         } />
         
         <Route path="/inventory" element={
-          <ProtectedRoute>
+          <RoleRoute allowedRoles={['Admin', 'Manager', 'Staff']}>
             <Inventory />
-          </ProtectedRoute>
+          </RoleRoute>
         } />
         
         <Route path="/requests" element={
-          <ProtectedRoute>
+          <RoleRoute allowedRoles={['Admin', 'Manager', 'Staff']}>
             <Requests />
-          </ProtectedRoute>
+          </RoleRoute>
+        } />
+
+        <Route path="/allocations" element={
+          <RoleRoute allowedRoles={['Admin', 'Manager']}>
+            <Allocations />
+          </RoleRoute>
+        } />
+
+        <Route path="/maintenance" element={
+          <RoleRoute allowedRoles={['Admin', 'Manager']}>
+            <Maintenance />
+          </RoleRoute>
+        } />
+
+        <Route path="/notifications" element={
+          <RoleRoute allowedRoles={['Admin', 'Manager', 'Staff']}>
+            <Notifications />
+          </RoleRoute>
         } />
         
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -26,6 +26,28 @@ async function initDb() {
       );
       console.log('Admin user seeded (admin / admin123).');
     }
+
+    // Seed manager user
+    const managerCheck = await pool.query("SELECT * FROM users WHERE username = 'manager'");
+    if (managerCheck.rows.length === 0) {
+      const hashedPassword = await bcrypt.hash('manager123', 10);
+      await pool.query(
+        "INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)",
+        ['manager', hashedPassword, 'Manager']
+      );
+      console.log('Manager user seeded (manager / manager123).');
+    }
+
+    // Seed staff user
+    const staffCheck = await pool.query("SELECT * FROM users WHERE username = 'staff'");
+    if (staffCheck.rows.length === 0) {
+      const hashedPassword = await bcrypt.hash('staff123', 10);
+      await pool.query(
+        "INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)",
+        ['staff', hashedPassword, 'Staff']
+      );
+      console.log('Staff user seeded (staff / staff123).');
+    }
   } catch (error) {
     console.error('Failed to initialize database:', error);
   }

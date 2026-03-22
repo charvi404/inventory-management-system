@@ -6,8 +6,38 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 // Get all items (All authenticated users can view)
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const result = await query('SELECT * FROM inventory_items ORDER BY name ASC');
-    res.json(result.rows);
+    const { category, name, status } = req.query;
+    let sql = 'SELECT * FROM inventory_items WHERE 1=1';
+    let params = [];
+    
+    if (category) {
+      params.push(category);
+      sql += ` AND category = $${params.length}`;
+    }
+    if (name) {
+      params.push(`%${name}%`);
+      sql += ` AND name ILIKE $${params.length}`;
+    }
+    
+    if (status === 'In Stock') {
+      sql += ' AND quantity > 0';
+    } else if (status === 'Out of Stock') {
+      sql += ' AND quantity = 0';
+    }
+    
+    sql += ' ORDER BY name ASC';
+    const result = await query(sql, params);
+    
+    // Check maintenance status
+    const maintenanceRes = await query(`SELECT item_id FROM maintenance_requests WHERE status IN ('Pending', 'In Progress')`);
+    const maintenanceItemIds = new Set(maintenanceRes.rows.map(r => r.item_id));
+    
+    const items = result.rows.map(item => ({
+      ...item,
+      under_maintenance: maintenanceItemIds.has(item.id)
+    }));
+    
+    res.json(items);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }

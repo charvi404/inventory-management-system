@@ -19,10 +19,19 @@ const Inventory = () => {
     price: 0
   });
 
+  const [searchName, setSearchName] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/inventory');
+      const params = new URLSearchParams();
+      if (searchName) params.append('name', searchName);
+      if (filterCategory) params.append('category', filterCategory);
+      if (filterStatus) params.append('status', filterStatus);
+
+      const res = await api.get(`/inventory?${params.toString()}`);
       setItems(res.data);
     } catch (err) {
       console.error(err);
@@ -32,8 +41,11 @@ const Inventory = () => {
   };
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchItems();
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchName, filterCategory, filterStatus]);
 
   const handleOpenModal = (item = null) => {
     if (item) {
@@ -107,6 +119,37 @@ const Inventory = () => {
         )}
       </div>
 
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <input 
+          type="text" 
+          placeholder="Search items by name..." 
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+          style={{ flex: 1, minWidth: '200px', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)' }}
+        />
+        <select 
+          value={filterCategory} 
+          onChange={(e) => setFilterCategory(e.target.value)}
+          style={{ padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+        >
+          <option value="">All Categories</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Stationery">Stationery</option>
+          <option value="Hardware">Hardware</option>
+          <option value="Other">Other</option>
+        </select>
+        <select 
+          value={filterStatus} 
+          onChange={(e) => setFilterStatus(e.target.value)}
+          style={{ padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+        >
+          <option value="">All Statuses</option>
+          <option value="In Stock">In Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+      </div>
+
       <div className="table-container">
         <table>
           <thead>
@@ -134,13 +177,13 @@ const Inventory = () => {
                 </td>
                 <td>
                   <span style={{ 
-                    color: item.quantity < 10 ? 'var(--warning)' : 'inherit',
-                    fontWeight: item.quantity < 10 ? '600' : 'normal'
+                    color: item.quantity < 5 ? 'var(--warning)' : 'inherit',
+                    fontWeight: item.quantity < 5 ? '600' : 'normal'
                   }}>
-                    {item.quantity}
+                    {item.quantity} {item.under_maintenance && <span style={{color: 'var(--danger)', fontSize: '0.75rem', marginLeft: '0.4rem'}}>(Maintenance)</span>}
                   </span>
                 </td>
-                <td>${Number(item.price).toFixed(2)}</td>
+                <td>₹{Number(item.price).toFixed(2)}</td>
                 <td style={{ textAlign: 'right' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                     {canEdit && (
@@ -211,7 +254,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Price ($)</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Price (₹)</label>
                 <input required type="number" step="0.01" name="price" value={formData.price} onChange={handleInputChange} min="0" style={{ width: '100%' }} />
               </div>
 

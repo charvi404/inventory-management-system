@@ -89,6 +89,12 @@ router.put('/:id/status', authenticateToken, requireRole(['Admin', 'Manager']), 
       'UPDATE equipment_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
       [status, req.params.id]
     );
+
+    // Create notification
+    await query(
+      'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+      [request.user_id, `Your equipment request for item ID ${request.item_id} was ${status.toLowerCase()}.`]
+    );
     
     await query('COMMIT');
     res.json(updateRes.rows[0]);

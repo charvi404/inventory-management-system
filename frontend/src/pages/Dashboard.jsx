@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { Package, AlertTriangle, Clock, Activity } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+
+const COLORS = ['#6366f1', '#f59e0b', '#ec4899', '#10b981', '#3b82f6', '#8b5cf6'];
 
 const Dashboard = () => {
   const [summary, setSummary] = useState(null);
@@ -92,30 +95,51 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', minHeight: '300px' }}>
           <h3 style={{ marginBottom: '1.5rem' }}>Items by Category</h3>
           {summary.categoryDistribution.length === 0 ? (
             <p style={{ color: 'var(--text-muted)' }}>No items yet.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {summary.categoryDistribution.map((cat, index) => (
-                <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{cat.category}</span>
-                  <span style={{ 
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)', 
-                    padding: '0.2rem 0.6rem', 
-                    borderRadius: '1rem',
-                    fontSize: '0.875rem',
-                    fontWeight: 600
-                  }}>
-                    {cat.count}
-                  </span>
-                </div>
-              ))}
+            <div style={{ width: '100%', height: '250px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={summary.categoryDistribution}
+                    dataKey="count"
+                    nameKey="category"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    label
+                  >
+                    {summary.categoryDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           )}
         </div>
       </div>
+
+      {summary.lowStockAlerts && summary.lowStockAlerts.length > 0 && (
+        <div className="glass-panel" style={{ padding: '1.5rem', marginTop: '2rem' }}>
+          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--warning)' }}>
+            <AlertTriangle size={20} /> Low Stock Alerts
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {summary.lowStockAlerts.map((item, index) => (
+              <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '0.5rem' }}>
+                <span style={{ fontWeight: 500 }}>{item.name}</span>
+                <span style={{ color: 'var(--warning)', fontWeight: 600 }}>{item.quantity} left</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

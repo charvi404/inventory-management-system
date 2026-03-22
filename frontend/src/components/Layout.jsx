@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Package, ClipboardList, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ClipboardList, LogOut, Wrench, Users, Bell } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -12,11 +12,15 @@ const Layout = ({ children }) => {
     navigate('/login');
   };
 
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Inventory', path: '/inventory', icon: <Package size={20} /> },
-    { name: 'Requests', path: '/requests', icon: <ClipboardList size={20} /> },
+  const allNavItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: ['Admin', 'Manager', 'Staff'] },
+    { name: 'Inventory', path: '/inventory', icon: <Package size={20} />, roles: ['Admin', 'Manager', 'Staff'] },
+    { name: 'Requests', path: '/requests', icon: <ClipboardList size={20} />, roles: ['Admin', 'Manager', 'Staff'] },
+    { name: 'Allocation', path: '/allocations', icon: <Users size={20} />, roles: ['Admin', 'Manager'] },
+    { name: 'Maintenance', path: '/maintenance', icon: <Wrench size={20} />, roles: ['Admin', 'Manager'] },
   ];
+
+  const navItems = user ? allNavItems.filter(item => item.roles.includes(user.role)) : [];
 
   return (
     <div className="app-container">
@@ -59,7 +63,10 @@ const Layout = ({ children }) => {
       </aside>
       
       <main className="main-content">
-        <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+        <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1.5rem' }}>
+          <NavLink to="/notifications" style={{ color: 'var(--text-secondary)', position: 'relative' }}>
+            <Bell size={20} />
+          </NavLink>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ color: 'var(--text-secondary)' }}>Welcome, <strong>{user?.username}</strong></span>
           </div>
